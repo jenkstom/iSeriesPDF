@@ -63,14 +63,16 @@ namespace lpd
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
             smtpserver = ConfigurationManager.AppSettings["smtp"];
             origdomain = ConfigurationManager.AppSettings["origdomain"];
+            delfiles = Convert.ToBoolean(ConfigurationManager.AppSettings["delfiles"]);
             log($"Spoolpath: {path}");
             log($"SMTP: {smtpserver}");
             log($"Domain: {origdomain}");
+            log($"Delete Files: {delfiles}");
 
             // Data buffer for incoming data.  
             byte[] bytes = new Byte[2048];
 
-            timeout = new Timer(timoutProcessor,null,0,5000);
+            timeout = new Timer(timeoutProcessor,null,0,5000);
 
             // Establish the local endpoint for the socket.  
             // The DNS name of the computer  
@@ -129,7 +131,7 @@ namespace lpd
             Console.WriteLine($"{DateTime.Now:HH:mm:ss}: {x}");
         }
 
-        private static void timoutProcessor(object state)
+        private static void timeoutProcessor(object state)
         {
             List<StateObject> deleteList = new List<StateObject>();
             foreach (StateObject s in states)
@@ -475,9 +477,12 @@ namespace lpd
                 //delete files
                 try
                 {
-					//uncomment to clean up
-                    File.Delete($"{Path.Combine(path, bfn)}{destExt}");
-                    File.Delete($"{Path.Combine(path, state.dfName)}");
+		    //uncomment to clean up
+                    if (delfiles)
+                    {
+                        File.Delete($"{Path.Combine(path, bfn)}{destExt}");
+                        File.Delete($"{Path.Combine(path, state.dfName)}");
+                    }
                 }
                 catch { }
                 return true;
