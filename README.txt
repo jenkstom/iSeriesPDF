@@ -1,4 +1,4 @@
-This is an LPD service written in c# that processes print files from an iSeries host
+This is an LPD server written in c# that processes print files from an iSeries host
 and translates them into image formats using GhostScript.
 
 iSeries -> PCL -> LPD protocol -> RQS -> GhostPCL -> PDF -> Email
