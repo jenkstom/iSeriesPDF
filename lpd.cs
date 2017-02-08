@@ -25,8 +25,10 @@ namespace lpd
         public static String path = "";
         public static String smtpserver = "";
         public static String origdomain = "";
+        public static bool delfiles = true;
 
         private static Timer timeout;
+        private static bool debug = false;
 
         public class StateObject
         {
@@ -64,10 +66,12 @@ namespace lpd
             smtpserver = ConfigurationManager.AppSettings["smtp"];
             origdomain = ConfigurationManager.AppSettings["origdomain"];
             delfiles = Convert.ToBoolean(ConfigurationManager.AppSettings["delfiles"]);
+            debug = Convert.ToBoolean(ConfigurationManager.AppSettings["debug"]);
             log($"Spoolpath: {path}");
             log($"SMTP: {smtpserver}");
             log($"Domain: {origdomain}");
             log($"Delete Files: {delfiles}");
+            log($"Debug: {debug}");
 
             // Data buffer for incoming data.  
             byte[] bytes = new Byte[2048];
@@ -133,6 +137,7 @@ namespace lpd
 
         private static void timeoutProcessor(object state)
         {
+            //if (debug) log("Timeout check");
             List<StateObject> deleteList = new List<StateObject>();
             foreach (StateObject s in states)
             {
@@ -179,6 +184,7 @@ namespace lpd
         {
             try
             {
+                if (debug) log("Receive packet");
                 String content = String.Empty;
 
                 // Retrieve the state object and the handler socket  
@@ -259,6 +265,7 @@ namespace lpd
                 }
                 else //remote closed connection, kill socket
                 {
+                    if (debug) log("Received empty packet, closing connection.");
                     state.workSocket.Shutdown(SocketShutdown.Both);
                     state.workSocket.Close();
                     states.Remove(state);
@@ -283,6 +290,8 @@ namespace lpd
             while (cmdbuf.Length > 0 && cmdbuf.IndexOf(Convert.ToChar(10)) >= 0)
             {
                 cmd = (cmdbuf.Substring(0, cmdbuf.IndexOf(Convert.ToChar(10))));
+                if (debug) log($"Process command: {cmd}");
+
                 //remove the processed command from the command buffer
                 state.cb.Remove(0, cmd.Length + 1);
                 cmdbuf = state.cb.ToString();
@@ -311,7 +320,7 @@ namespace lpd
                     {
                         //subcommand mode
                         case 2: //control file
-                            //log("Receiving control file");
+                            if (debug) log("Receiving control file");
                             state.cfName = filename;
                             if (cmdbuf.Length > length)
                             {
@@ -333,7 +342,7 @@ namespace lpd
                             SendAck(state.workSocket);
                             break;
                         case 3: //data file
-                            //log("Receiving control file");
+                            if (debug) log("Receiving control file");
                             state.dfName = filename;
                             if (cmdbuf.Length > length)
                             {
@@ -370,6 +379,8 @@ namespace lpd
 
         private static bool doConversion(StateObject state)
         {
+            if (debug) log("Call doConversion()");
+
             if (state.rcvcf == false && state.rcvdf == false && state.cf.Length != 0
                 && state.df.Length != 0 && state.queuename != "" && state.cf.Length > 0
                 && state.df.Length > 0)
@@ -380,6 +391,7 @@ namespace lpd
                 String bfn = Path.GetFileNameWithoutExtension(state.dfName);
                 String username = "";
                 String jobname = "";
+                if (debug) log($"bfn: {bfn}");
 
                 //remove null characters at end of files
                 state.cf.Remove(state.cf.Length-1, 1);
@@ -395,6 +407,9 @@ namespace lpd
                     }
                 }
 
+                if (debug) log($"User: {username}");
+                if (debug) log($"job: {jobname}");
+
                 if (username == "")
                 {
                     log("Can't determine username, aborting.");
@@ -403,6 +418,7 @@ namespace lpd
 
                 //log($"Processing received file {bfn}, user {username}, queue {state.queuename}");
 
+                if (debug) log($"Open streamwriter");
                 StreamWriter datafile = new StreamWriter(Path.Combine(path, state.dfName));
                 datafile.Write(state.df.ToString());
                 datafile.Flush();
@@ -428,6 +444,10 @@ namespace lpd
                         break;
                 }
 
+                if (debug) log($"Ext: {destExt}");
+                if (debug) log($"multiImage: {multiImage}");
+                if (debug) log($"Output format: {outFormat}");
+
                 //Convert and dump these files into imaging or PDF
                 log($"Received print job: {bfn} for queue {state.queuename}, user {username}.");
 
@@ -436,7 +456,7 @@ namespace lpd
                 process.StartInfo.FileName = "gpcl6win64.exe";
                 process.StartInfo.Arguments = $@"-dNOPAUSE -dBATCH -sDEVICE={outFormat} -sOutputFile={Path.Combine(path, bfn)}{destExt} " +
                     $"-dAutoRotatePages=/All -J {Path.Combine(path, state.dfName)}"; //argument
-                //log(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+                if (debug) log(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
                 process.StartInfo.UseShellExecute = false;
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
@@ -445,7 +465,7 @@ namespace lpd
                 string output = process.StandardOutput.ReadToEnd(); //The output result
                 if (process.WaitForExit(60000))
                 {
-                    //log("gpcl output: " + output);
+                    if (debug) log("gpcl output: " + output);
 
                     //send email to originating user
                     switch (state.queuename)
@@ -477,9 +497,10 @@ namespace lpd
                 //delete files
                 try
                 {
-		    //uncomment to clean up
+                    //uncomment to clean up
                     if (delfiles)
                     {
+                        if (debug) log("Deleting files");
                         File.Delete($"{Path.Combine(path, bfn)}{destExt}");
                         File.Delete($"{Path.Combine(path, state.dfName)}");
                     }
@@ -539,10 +560,11 @@ namespace lpd
         {
             try
             {
-                //log("Sending ack");
+                if (debug) log("Sending ack");
                 // Convert the string data to byte data using ASCII encoding.  
                 byte[] ack = new byte[4];
-                ack[0] = ack[1] = ack[2] = ack[3] = 0;
+                ack[0] = ack[2] = ack[3] = 0;
+                ack[1] = 10;
 
                 // Begin sending the data to the remote device.  
                 handler.BeginSend(ack, 0, 1, SocketFlags.None,
@@ -564,7 +586,7 @@ namespace lpd
 
                 // Complete sending the data to the remote device.  
                 int bytesSent = handler.EndSend(ar);
-                //log($"Sent {bytesSent} bytes to client.");
+                if (debug) log($"Remote host acknowledged {bytesSent} bytes.");
 
                 //handler.Shutdown(SocketShutdown.Both);
                 //handler.Close();
