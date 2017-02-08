@@ -259,9 +259,9 @@ namespace lpd
                 }
                 else //remote closed connection, kill socket
                 {
-                    //state.workSocket.Shutdown(SocketShutdown.Both);
-                    //state.workSocket.Close();
-                    //states.Remove(state);
+                    state.workSocket.Shutdown(SocketShutdown.Both);
+                    state.workSocket.Close();
+                    states.Remove(state);
                 }
             }
             catch (Exception ex)
