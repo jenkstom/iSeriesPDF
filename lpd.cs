@@ -293,7 +293,7 @@ namespace lpd
                     switch (Convert.ToByte(cmd[0]))
                     {
                         case 2: //lpr
-                            state.queuename = cmd.Substring(1);
+                            state.queuename = cmd.Substring(1).ToUpper();
                             state.lprmode = true;
                             log($"Received LPR Command for queue {state.queuename}");
                             SendAck(state.workSocket);
