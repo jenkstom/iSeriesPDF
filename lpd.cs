@@ -497,7 +497,6 @@ namespace lpd
                 //delete files
                 try
                 {
-                    //uncomment to clean up
                     if (delfiles)
                     {
                         if (debug) log("Deleting files");
