@@ -211,7 +211,7 @@ namespace lpd
             state.workSocket = handler;
             state.lastPacket = DateTime.Now;
             states.Add(state);
-            handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+            handler.BeginReceive(state.buffer, 0, BufferSize, 0,
                 new AsyncCallback(ReadCallback), state);
         }
 
@@ -257,7 +257,7 @@ namespace lpd
                                     state.buffer, 0, state.bytesremaining));
 
                                 //remove bytes that go to file from remaining bytes
-                                byte[] temp = new byte[StateObject.BufferSize];
+                                byte[] temp = new byte[BufferSize];
                                 Array.Copy(state.buffer, state.bytesremaining, temp, 0, bytesRead - state.bytesremaining);
                                 Array.Copy(temp, state.buffer, bytesRead - state.bytesremaining);
                                 bytesRead -= state.bytesremaining;
