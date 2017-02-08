@@ -107,14 +107,13 @@ namespace lpd
             log($"Debug: {debug}");
 
             // Data buffer for incoming data.  
-            byte[] bytes = new Byte[2048];
+            byte[] bytes = new Byte[BufferSize];
 
             // Create timer that calls method every 5 seconds
             timeout = new Timer(timeoutProcessor,null,0,5000);
 
             // Establish the local endpoint for the socket.  
             // The DNS name of the computer  
-            // running the listener is "host.contoso.com".  
             IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
             IPAddress ipAddress = ipHostInfo.AddressList[0];
             IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 515);

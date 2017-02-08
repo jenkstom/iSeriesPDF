@@ -42,3 +42,13 @@ gpcl6win64.exe
 
 You may need to start it up as administrator since it's a low port. 
 Make sure to open firewall ports as needed.
+
+Please note: Some spool files do not have SCS data created correctly. You can
+view the remote queue job log to see this:
+
+  dspjob job(pdfsrv)
+
+These jobs will never print via this method because they do not have
+the data needed to create the output. But a new job created for this
+remote output queue should always work. Set the default output queue
+for users to this output queue and there should be no issues.
