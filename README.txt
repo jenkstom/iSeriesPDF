@@ -3,6 +3,10 @@ and translates them into image formats using GhostScript.
 
 iSeries -> PCL -> LPD protocol -> RQS -> GhostPCL -> PDF -> Email
 
+Note: Thiz service accepts any print file by LPD and passes it through a program.
+It could be expanded to cover a wide range of use cases, including scenarios that 
+don't involve iSeries. 
+
 First you will need to create a remote output queue:
 
 http://www-01.ibm.com/support/docview.wss?uid=nas8N1010090
