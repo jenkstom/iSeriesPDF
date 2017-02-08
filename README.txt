@@ -1,33 +1,33 @@
-This is an LPD server written in c# that processes print files from an iSeries host
-and translates them into image formats using GhostScript.
+This is an LPD server written in c# that processes print files from an iSeries
+host and translates them into image formats using GhostScript.
 
 iSeries -> PCL -> LPD protocol -> RQS -> GhostPCL -> PDF -> Email
 
-Note: Thiz service accepts any print file by LPD and passes it through a program.
-It could be expanded to cover a wide range of use cases, including scenarios that 
-don't involve iSeries. 
+Note: Thiz service accepts any print file by LPD and passes it through a
+program.  It could be expanded to cover a wide range of use cases, including
+scenarios that don't involve iSeries. 
 
 First you will need to create a remote output queue:
 
 http://www-01.ibm.com/support/docview.wss?uid=nas8N1010090
 
-crtoutq (Then hit F4)
-Output Queue: pdfsrv
-Library: qusrsys
-(Hit F10 for more)
-Remote system: *INTNETADR
-Remote printer queue: 'PDFEMAIL'
-Connection Type: *IP
-Destination type: *other
-Host print transform: yes
-Manufacturer type and model: *HPII
-Internet Address: '192.168.1.22'
-(Hit Enter to create)
-
-strrmtwtr pfdsrv
+  crtoutq (Then hit F4)
+  Output Queue: pdfsrv
+  Library: qusrsys
+  (Hit F10 for more)
+  Remote system: *INTNETADR
+  Remote printer queue: 'PDFEMAIL'
+  Connection Type: *IP
+  Destination type: *other
+  Host print transform: yes
+  Manufacturer type and model: *HPII
+  Internet Address: '192.168.1.22'
+  (Hit Enter to create)
+  
+  strrmtwtr pfdsrv
 
 You can end with
-endwtr pdfsrv option(*immed)
+  endwtr pdfsrv option(*immed)
 
 Edit the config file and add your SMTP server, domain, etc.
 
@@ -48,7 +48,16 @@ view the remote queue job log to see this:
 
   dspjob job(pdfsrv)
 
-These jobs will never print via this method because they do not have
-the data needed to create the output. But a new job created for this
-remote output queue should always work. Set the default output queue
-for users to this output queue and there should be no issues.
+These jobs will never print via this method because they do not have the data
+needed to create the output. When you release the job it connects to the
+server, checks the queue and then disconnects. On the iSeries host the status
+just immediately goes back to HLD. 
+
+But a new output file created for this remote output queue should always work.
+Set the default output queue for users to this output queue and there should be
+no issues. 
+
+Here is some info:
+
+http://www-01.ibm.com/support/docview.wss?uid=nas8N1019550
+
