@@ -136,7 +136,7 @@ namespace lpd
             List<StateObject> deleteList = new List<StateObject>();
             foreach (StateObject s in states)
             {
-                if (s.lastPacket < DateTime.Now.AddSeconds(-10))
+                if (s.lastPacket < DateTime.Now.AddSeconds(-60))
                 {
                     try
                     {
@@ -434,7 +434,7 @@ namespace lpd
                 //use ghostpcl to convert to pdf
                 System.Diagnostics.Process process = new System.Diagnostics.Process();
                 process.StartInfo.FileName = "gpcl6win64.exe";
-                process.StartInfo.Arguments = $@"-dNOPAUSE -sDEVICE={outFormat} -sOutputFile={Path.Combine(path, bfn)}{destExt} " +
+                process.StartInfo.Arguments = $@"-dNOPAUSE -dBATCH -sDEVICE={outFormat} -sOutputFile={Path.Combine(path, bfn)}{destExt} " +
                     $"-dAutoRotatePages=/All -J {Path.Combine(path, state.dfName)}"; //argument
                 //log(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
                 process.StartInfo.UseShellExecute = false;
