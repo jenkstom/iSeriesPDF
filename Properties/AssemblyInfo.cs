@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("cli_rqsvc")]
-[assembly: AssemblyCopyright("Copyright © Tom Whit 2017")]
+[assembly: AssemblyCopyright("Copyright © Tom White 2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
