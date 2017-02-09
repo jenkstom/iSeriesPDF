@@ -326,7 +326,7 @@ namespace lpd
                 {
                     // If we receive a zero byte callback then the 
                     // remote has closed the connection, kill socket.
-                    if (debug) log("Received empty packet, closing connection.");
+                    if (debug) log("Remote host closed connection.");
                     state.workSocket.Shutdown(SocketShutdown.Both);
                     state.workSocket.Close();
                     states.Remove(state);
