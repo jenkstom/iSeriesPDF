@@ -1,5 +1,9 @@
 This is an LPD server written in c# that processes print files from an iSeries
-host and translates them into image formats using GhostScript.
+host and translates them into image formats using GhostScript running on a
+Windows host. If using the PDFEMAIL queue, then it emails the PDF file to the
+user that owns the print job, assuming the iSeries username matches a
+username@emaildomain.com. This server does not require any licensed programs on the
+iSeries such as Transform Services or Infoprint Server.
 
 iSeries -> PCL -> LPD protocol -> RQS -> GhostPCL -> PDF -> Email
 
@@ -59,7 +63,7 @@ But a new output file created for this remote output queue should always work.
 Set the default output queue for users to this output queue and there should be
 no issues. 
 
-Here is some info:
+Here is some info on troubleshooting this issue.
 
 http://www-01.ibm.com/support/docview.wss?uid=nas8N1019550
 
