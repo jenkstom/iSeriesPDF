@@ -487,6 +487,9 @@ namespace lpd
                 if (debug) log($"User: {username}");
                 if (debug) log($"job: {jobname}");
 
+                // Modify file name to includ username
+                bfn = removeInvalidChars(username, Path.GetInvalidFileNameChars()) + "-" + bfn;
+                
                 // If we don't have a username we don't know who to email to
                 // We could have a default instead.
                 if (username == "")
