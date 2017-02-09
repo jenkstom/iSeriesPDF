@@ -33,6 +33,8 @@ Edit the config file and add your SMTP server, domain, etc.
 
 This program uses GhostPCL to convert PCL printer files to PDF.
 https://www.ghostscript.com/GhostPCL.html
+You may download the source from this page:
+https://ghostscript.com/download/gpcldnld.html
 
 Copy these two ghostPCL files into your program folder before opening the project.
 Or just make sure they are in the executable folder when the server is run.
