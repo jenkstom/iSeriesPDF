@@ -173,9 +173,9 @@ namespace lpd
         private static string removeNonmatchingChars(String arg, String validChars)
         {
             String result = "";
-            foreach (Char c in validChars)
+            foreach (Char c in arg)
             {
-                if (arg.IndexOf(c) >= 0) result += c;
+                if (validChars.IndexOf(c) >= 0) result += c;
             }
             return result;
         }
