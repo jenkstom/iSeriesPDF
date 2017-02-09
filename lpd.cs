@@ -32,6 +32,8 @@ namespace lpd
 
         // Size of receive buffer.  
         public const int BufferSize = 2048;
+        // String used to determine a valid hostname
+        public const String validHostChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=`.";
 
         // This state object is the only place we store state
         // between received packets. It needs to store both
@@ -94,10 +96,10 @@ namespace lpd
             //**TODO: add smtp user and pass
 
             //Get config options from .config file
-            path = ConfigurationManager.AppSettings["spoolpath"];
+            path = removeInvalidChars(ConfigurationManager.AppSettings["spoolpath"], Path.GetInvalidPathChars());
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-            smtpserver = ConfigurationManager.AppSettings["smtp"];
-            origdomain = ConfigurationManager.AppSettings["origdomain"];
+            smtpserver = removeNonmatchingChars(ConfigurationManager.AppSettings["smtp"], validHostChars);
+            origdomain = removeNonmatchingChars(ConfigurationManager.AppSettings["origdomain"], validHostChars);
             delfiles = Convert.ToBoolean(ConfigurationManager.AppSettings["delfiles"]);
             debug = Convert.ToBoolean(ConfigurationManager.AppSettings["debug"]);
             log($"Spoolpath: {path}");
@@ -158,6 +160,24 @@ namespace lpd
                 state.workSocket.Shutdown(SocketShutdown.Both);
                 state.workSocket.Close();
             }
+        }
+
+        private static string removeInvalidChars(String arg, char[] invalidChars)
+        {
+            String result = arg;
+            foreach (char c in invalidChars)
+                arg.Replace(Convert.ToString(c), String.Empty);
+            return result;
+        }
+
+        private static string removeNonmatchingChars(String arg, String validChars)
+        {
+            String result = "";
+            foreach (Char c in validChars)
+            {
+                if (arg.IndexOf(c) >= 0) result += c;
+            }
+            return result;
         }
 
         private static void log(String x)
@@ -223,7 +243,7 @@ namespace lpd
             // same packet, which is why this isn't simple.
             try
             {
-                if (debug) log("Receive packet");
+                //if (debug) log("Receive packet");
                 String content = String.Empty;
 
                 // Retrieve the state object and the handler socket  
@@ -299,7 +319,7 @@ namespace lpd
                     }
 
                     // Since our previous packet had >0 bytes, lets wait for more.
-                    handler.BeginReceive(state.buffer, 0, StateObject.BufferSize, 0,
+                    handler.BeginReceive(state.buffer, 0, BufferSize, 0,
                     new AsyncCallback(ReadCallback), state);
                 }
                 else 
@@ -372,7 +392,7 @@ namespace lpd
                     {
                         case 2: //control file
                             if (debug) log("Receiving control file");
-                            state.cfName = filename;
+                            state.cfName = removeInvalidChars(filename,Path.GetInvalidFileNameChars());
                             if (cmdbuf.Length > length)
                             {
                                 state.cf = new StringBuilder(cmdbuf.Substring(0, length));
@@ -394,7 +414,7 @@ namespace lpd
                             break;
                         case 3: //data file
                             if (debug) log("Receiving control file");
-                            state.dfName = filename;
+                            state.dfName = removeInvalidChars(filename, Path.GetInvalidFileNameChars());
                             if (cmdbuf.Length > length)
                             {
                                 state.df = new StringBuilder(cmdbuf.Substring(0, length));
@@ -521,7 +541,7 @@ namespace lpd
                 process.StartInfo.CreateNoWindow = true; //not diplay a windows
                 process.Start();
                 string output = process.StandardOutput.ReadToEnd(); //The output result
-                if (process.WaitForExit(60000))
+                if (process.WaitForExit(300000)) //five minute timeout
                 {
                     if (debug) log("gpcl output: " + output);
 
