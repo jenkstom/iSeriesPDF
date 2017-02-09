@@ -3,7 +3,7 @@ host and translates them into image formats using GhostScript.
 
 iSeries -> PCL -> LPD protocol -> RQS -> GhostPCL -> PDF -> Email
 
-Note: Thiz service accepts any print file by LPD and passes it through a
+Note: This service accepts any print file by LPD and passes it through a
 program.  It could be expanded to cover a wide range of use cases, including
 scenarios that don't involve iSeries. 
 
